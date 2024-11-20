@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mystic Tarot Reading</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #1a1b4b, #090a2a);
+            --accent-gold: #ffd700;
+            --accent-silver: #e0e1ff;
+            --text-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+            --star-glow: 0 0 20px rgba(255, 255, 255, 0.4);
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: url('./imgs/background.jpg') center center/cover fixed !important;
+            min-height: 100vh;
+            position: relative;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            display: none;
+        }
+
+        .page-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 27, 75, 0.85);
+            z-index: -1;
+        }
+
+        .content-container {
+            background: transparent;
+            padding: 2rem;
+            margin: 0;
+            width: 100vw;
+            margin-left: calc(-50vw + 50%);
+            margin-right: calc(-50vw + 50%);
+            min-height: 100%;
+        }
+
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .card {
+            perspective: 1000px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 300px;
+            aspect-ratio: 2/3.75;
+            margin: 0 auto;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.8s;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            border: 2px solid var(--accent-gold);
+        }
+
+        .card-front {
+            transform: rotateY(0deg);
+            border: 2px solid var(--accent-gold);
+            background: #1A103C;
+            overflow: hidden;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background: #1a1b4b url('./imgs/tarot-back.jpg') center center/cover;
+            border: 2px solid var(--accent-gold);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 10px;
+        }
+
+        .card-back::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                transparent 0%,
+                rgba(255, 255, 255, 0.05) 45%,
+                rgba(255, 255, 255, 0.1) 50%,
+                rgba(255, 255, 255, 0.05) 55%,
+                transparent 100%
+            );
+            animation: shimmer 3s infinite linear;
+            border-radius: 8px;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .card-front img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .card:hover .card-inner {
+            box-shadow: 0 0 25px var(--accent-gold);
+        }
+
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .main-title {
+            font-size: 48px;
+            color: var(--accent-gold);
+            text-shadow: var(--text-shadow);
+            transition: text-shadow 0.3s ease;
+        }
+
+        .main-title:hover {
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        }
+
+        .deck-image-container {
+            position: relative;
+            width: 260px;
+            aspect-ratio: 2/3.75;
+            margin: 2rem auto;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .deck-image-container:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .deck-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid var(--accent-gold);
+            background: #1a1b4b url('./imgs/tarot-back.jpg') center center/cover;
+        }
+
+        .glow-button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: rgba(26, 16, 60, 0.6);
+        }
+
+        .glow-button:hover {
+            box-shadow: 0 0 20px var(--accent-gold);
+            text-shadow: 0 0 10px var(--accent-gold);
+            background: rgba(45, 27, 78, 0.8);
+        }
+
+        .glow-button::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .glow-button:hover::after {
+            opacity: 1;
+        }
+
+        #cardDisplay {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(200px, 1fr));
+            gap: 2rem;
+            justify-content: center;
+            margin: 2rem auto 6rem auto;
+            max-width: 1200px;
+        }
+
+        #readingSection {
+            margin-top: 8rem !important;
+            padding-top: 3rem;
+            border-top: 2px solid var(--accent-gold);
+        }
+
+        .card h3 {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body class="text-white">
+    <!-- Add the overlay -->
+    <div class="page-overlay"></div>
+
+    <!-- Update header section -->
+    <header class="text-center py-10 relative">
+        <div class="content-container">
+            <div class="content-wrapper">
+                <h1 class="main-title font-playfair mb-6">
+                    Get Your Tarot Readings
+                </h1>
+                <p class="text-[var(--accent-silver)] text-xl mb-8">
+                    Discover your path through the ancient wisdom of tarot
+                </p>
+                <div class="deck-image-container">
+                    <img 
+                        src="./imgs/tarot-back.jpg" 
+                        alt="Rider Tarot Deck" 
+                        class="deck-image"
+                        onerror="this.onerror=null; this.src='https://via.placeholder.com/300x400/2D1B4E/FFD700?text=Tarot+Deck'"
+                    >
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Update main section -->
+    <main>
+        <div class="content-container">
+            <div class="content-wrapper">
+                <div class="text-center mb-12">
+                    <button id="drawCards" class="glow-button bg-opacity-20 bg-purple-900 border-2 border-[var(--accent-gold)] text-[var(--accent-gold)] uppercase font-bold py-3 px-8 rounded-full hover:bg-purple-800 transition-all duration-300">
+                        Draw Cards
+                    </button>
+                    <div id="loadingSpinner" class="hidden mt-4">
+                        <div class="loading-spinner inline-block w-8 h-8 border-4 border-[var(--accent-gold)] border-t-transparent rounded-full"></div>
+                    </div>
+                </div>
+
+                <!-- Card Display Section -->
+                <div id="cardDisplay" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 hidden">
+                    <!-- Cards will be inserted here -->
+                </div>
+
+                <!-- Reading Section -->
+                <div id="readingSection" class="max-w-3xl mx-auto space-y-6 hidden">
+                    <div class="border-t border-[var(--accent-gold)] pt-6">
+                        <div id="reading" class="space-y-4">
+                            <!-- Reading content will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Update footer section -->
+    <footer class="text-center py-8">
+        <div class="content-container">
+            <div class="content-wrapper">
+                <p class="text-sm text-[var(--accent-silver)]">
+                    © 2024 Mystic Tarot Reading. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { tarotDeck } from './tarotData.js';
+        
+        // Wait for the module to load and initialize the deck
+        document.addEventListener('DOMContentLoaded', () => {
+            window.tarotDeck = tarotDeck;
+            console.log('Tarot deck initialized:', window.tarotDeck); // Debug log
+        });
+    </script>
+
+    <script>
+        const API_ENDPOINT = 'https://api.naga.ac/v1/chat/completions';
+        const API_KEY = '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';
+
+        async function getReading(cards) {
+            try {
+                // Create a more natural-sounding mock reading
+                const reading = `
+Card 1: ${cards[0].name}
+• Keywords: ${cards[0].keywords}
+• This card suggests ${generateCardMeaning(cards[0])}
+
+Card 2: ${cards[1].name}
+• Keywords: ${cards[1].keywords}
+• In your reading, this represents ${generateCardMeaning(cards[1])}
+
+Card 3: ${cards[2].name}
+• Keywords: ${cards[2].keywords}
+• This final card indicates ${generateCardMeaning(cards[2])}
+
+Overall Interpretation:
+The combination of these cards suggests a journey involving ${generateCombinedMeaning(cards)}. 
+
+Advice:
+${generateAdvice(cards)}
+`;
+                return reading;
+            } catch (error) {
+                console.error('Error generating reading:', error);
+                return `
+                    <p class="text-red-500">Unable to generate reading. Please try again.</p>
+                    <p class="text-sm mt-2">Error details: ${error.message}</p>
+                `;
+            }
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function createCardElement(card, index) {
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'card';  // Remove aspect-[2/3] as we already defined it in CSS
+            
+            // Construct the correct image path
+            let imagePath;
+            if (card.name.includes('of')) {
+                // Minor Arcana
+                imagePath = `./imgs/cards/minor/${card.file}`;
+            } else {
+                // Major Arcana
+                imagePath = `./imgs/cards/major/${card.file}`;
+            }
+            
+            cardDiv.innerHTML = `
+                <div class="card-inner">
+                    <div class="card-back"></div>
+                    <div class="card-front">
+                        <img src="${imagePath}" 
+                             alt="${card.name}" 
+                             class="w-full h-full object-cover"
+                             onerror="console.log('Failed to load:', this.src); this.src='./imgs/tarot-back.jpg'">
+                    </div>
+                </div>
+                <h3 class="text-[var(--accent-gold)] text-xl mt-4">${card.name}</h3>
+                <p class="text-[var(--accent-silver)] text-sm">${card.keywords}</p>
+            `;
+            
+            // Start with the back showing, then flip to front
+            const cardInner = cardDiv.querySelector('.card-inner');
+            cardInner.style.transform = 'rotateY(180deg)';
+            
+            setTimeout(() => {
+                cardInner.style.transform = 'rotateY(0deg)';
+            }, index * 800);
+
+            // Add hover effects
+            cardDiv.addEventListener('mouseover', () => {
+                cardDiv.style.transform = 'translateY(-10px)';
+                cardDiv.style.boxShadow = '0 0 30px rgba(255, 215, 0, 0.3)';
+            });
+
+            cardDiv.addEventListener('mouseout', () => {
+                cardDiv.style.transform = 'translateY(0)';
+                cardDiv.style.boxShadow = 'none';
+            });
+
+            return cardDiv;
+        }
+
+        function generateCardMeaning(card) {
+            const meanings = {
+                major: 'a significant life event or spiritual lesson that requires your attention',
+                cups: 'emotional matters, relationships, or creative endeavors that are influencing your situation',
+                pentacles: 'practical matters, finances, or material aspects of your life that need focus',
+                swords: 'mental challenges, decisions, or communications that are present in your path',
+                wands: 'passion, creativity, or new opportunities that are manifesting in your life'
+            };
+
+            if (!card.name.includes('of')) {
+                return meanings.major;
+            }
+            
+            for (const [suit, meaning] of Object.entries(meanings)) {
+                if (card.name.toLowerCase().includes(suit)) {
+                    return meaning;
+                }
+            }
+            return 'important aspects of your current situation';
+        }
+
+        function generateCombinedMeaning(cards) {
+            return 'personal growth, change, and the need to balance different aspects of your life. Consider how these elements are working together in your current situation';
+        }
+
+        function generateAdvice(cards) {
+            const adviceOptions = [
+                'Take time to reflect on your current path and trust your intuition as you move forward.',
+                'Consider how you can balance your practical needs with your emotional well-being.',
+                'This is a time for careful consideration before taking action. Trust that you have the wisdom to make the right choice.',
+                'Focus on your strengths while remaining open to new perspectives and opportunities.',
+                'Remember that change, while sometimes challenging, often leads to greater personal growth.'
+            ];
+            return adviceOptions[Math.floor(Math.random() * adviceOptions.length)];
+        }
+
+        document.getElementById('drawCards').addEventListener('click', async function() {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const cardDisplay = document.getElementById('cardDisplay');
+            const readingSection = document.getElementById('readingSection');
+            const readingDiv = document.getElementById('reading');
+
+            try {
+                // Check if tarot deck is available
+                if (!window.tarotDeck || !Array.isArray(window.tarotDeck)) {
+                    throw new Error('Tarot deck not properly initialized. Please refresh the page.');
+                }
+
+                // Reset and show loading state
+                cardDisplay.innerHTML = '';
+                readingDiv.innerHTML = '';
+                loadingSpinner.classList.remove('hidden');
+                cardDisplay.classList.remove('hidden');
+                readingSection.classList.add('hidden');
+
+                // Draw three random cards
+                const drawnCards = shuffleArray([...window.tarotDeck]).slice(0, 3);
+                console.log('Drawn cards:', drawnCards); // Debug log
+
+                // Display cards
+                drawnCards.forEach((card, index) => {
+                    const cardElement = createCardElement(card, index);
+                    cardDisplay.appendChild(cardElement);
+                });
+
+                // Get and display reading
+                console.log('Requesting reading...'); // Debug log
+                const reading = await getReading(drawnCards);
+                console.log('Received reading:', reading); // Debug log
+
+                readingDiv.innerHTML = reading.split('\n').map(paragraph => {
+                    if (paragraph.trim() === '') return '';
+                    if (paragraph.startsWith('-') || paragraph.startsWith('•')) {
+                        return `<p class="text-[var(--accent-silver)] ml-4 my-2">• ${paragraph.substring(1).trim()}</p>`;
+                    }
+                    return `<p class="text-[var(--accent-silver)] my-2">${paragraph}</p>`;
+                }).join('');
+
+                // Hide loading spinner and show reading
+                loadingSpinner.classList.add('hidden');
+                readingSection.classList.remove('hidden');
+
+                // Smooth scroll to reading after cards are drawn
+                setTimeout(() => {
+                    readingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 2500);
+            } catch (error) {
+                console.error('Error in click handler:', error);
+                readingDiv.innerHTML = `
+                    <p class="text-red-500">An error occurred while generating your reading.</p>
+                    <p class="text-sm mt-2">Error details: ${error.message}</p>
+                `;
+                loadingSpinner.classList.add('hidden');
+                readingSection.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html> 
