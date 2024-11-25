@@ -1,6 +1,7 @@
 # Tarot Card Reading Website
 
 A single-page website for drawing three Tarot cards and generating AI-powered readings. Built with the Rider Tarot Deck, the website features a mystical dark violet theme and interactive functionality.
+The website was generated using Cursor WITHOUT coding.
 
 ## Features
 - **Draw Cards**: Click a button to select three cards from the deck randomly.
